@@ -1,15 +1,3 @@
-data class Cell(val row: Int, val column: Int)
-interface MatrixInterface<E> {
-    val height: Int
-    val width: Int
-    operator fun get(row: Int, column: Int): E
-    operator fun get(cell: Cell): E
-    operator fun set(row: Int, column: Int, value: E)
-    operator fun set(cell: Cell, value: E)
-}
-
-fun <E> createMatrix(height: Int, width: Int, e: E): Matrix<E> = Matrix(height, width, e)
-
 class Matrix<E>(override val height: Int, override val width: Int, e: E) : MatrixInterface<E> {
 
     private val map: MutableMap<Cell, E> = mutableMapOf()

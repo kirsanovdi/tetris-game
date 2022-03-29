@@ -8,25 +8,9 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import kotlin.concurrent.thread
 
-const val windowHeight = 800
-const val windowWidth = 400
-const val windowTitle = "Tetris"
-const val delay = 200L
-const val updateRate = 10
-const val heightGrip = 20
-const val widthGrip = 10
-const val lineScore = 400
-const val line4Score = 2000
-const val boxSize = 80
-val gridColor = Color.BlACK
-
-enum class Color {
-    RED, GREEN, BLUE, BlACK, WHITE
-}
-
 class GraphicsDisplay(private val gameCore: GameCore, private val controller: Controller) {
     private var window: Long = 0
-    //private var boxSize = 10max(windowHeight, windowWidth) / max(gameCore.height, gameCore.width)
+    /**Запуск GUI*/
     fun run() {
         println("Program $windowTitle launched using LWJGL ${Version.getVersion()}")
         init()
@@ -37,6 +21,7 @@ class GraphicsDisplay(private val gameCore: GameCore, private val controller: Co
         GLFW.glfwSetErrorCallback(null)!!.free()
     }
 
+    /**Инициализация GLFW и вспомогательных элементов, инициализания ввода с клавиатуры*/
     private fun init() {
         GLFWErrorCallback.createPrint(System.err).set()
         check(GLFW.glfwInit()) { "Unable to initialize GLFW" }
@@ -45,14 +30,6 @@ class GraphicsDisplay(private val gameCore: GameCore, private val controller: Co
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE)
         window = GLFW.glfwCreateWindow(windowWidth, windowHeight, windowTitle, MemoryUtil.NULL, MemoryUtil.NULL)
         if (window == MemoryUtil.NULL) throw RuntimeException("Failed to create the GLFW window")
-        /*GLFW.glfwSetKeyCallback(
-            window
-        ) { window: Long, key: Int, scancode: Int, action: Int, mods: Int ->
-            if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE) GLFW.glfwSetWindowShouldClose(
-                window,
-                true
-            )
-        }*/
         MemoryStack.stackPush().use { stack ->
             val pWidth = stack.mallocInt(1)
             val pHeight = stack.mallocInt(1)
@@ -70,10 +47,11 @@ class GraphicsDisplay(private val gameCore: GameCore, private val controller: Co
         GLFW.glfwShowWindow(window)
     }
 
+    /**Цикл, в котором происходит отрисовка кадра*/
     private fun loop() {
         GL.createCapabilities()
         glClearColor(1.0f, 1.0f, 1.0f, 0.0f)
-        while (!GLFW.glfwWindowShouldClose(window) && !controller.toClose) {
+        while (!GLFW.glfwWindowShouldClose(window) && !controller.isClose()) {
             glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
             drawField()
             drawFigure()
@@ -83,9 +61,13 @@ class GraphicsDisplay(private val gameCore: GameCore, private val controller: Co
         }
     }
 
+    /**Конвертация координаты X из [0, windowWidth] в [-1.0, 1.0]*/
     private fun fXCord(cord: Int): Float = -1.0f + cord.toFloat() / windowWidth * boxSize
+
+    /**Конвертация координаты Y из [0, windowHeight] в [-1.0, 1.0]*/
     private fun fYCord(cord: Int): Float = -1.0f + cord.toFloat() / windowHeight * boxSize
 
+    /**Отрисовка сетки*/
     private fun drawGrid() {
         glBegin(GL_LINES)
         setColor(gridColor)
@@ -100,6 +82,7 @@ class GraphicsDisplay(private val gameCore: GameCore, private val controller: Co
         glEnd()
     }
 
+    /**Отрисовка одной ячейки*/
     private fun drawElem(y: Int, x: Int, color: Color) {
         glBegin(GL_TRIANGLE_STRIP)
         setColor(color)
@@ -110,6 +93,7 @@ class GraphicsDisplay(private val gameCore: GameCore, private val controller: Co
         glEnd()
     }
 
+    /**Отрисовка всех Ячеек*/
     private fun drawField() {
         for (y in 0 until gameCore.height) {
             for (x in 0 until gameCore.width) {
@@ -118,12 +102,14 @@ class GraphicsDisplay(private val gameCore: GameCore, private val controller: Co
         }
     }
 
+    /**Отрисовка фигуры*/
     private fun drawFigure() {
-        for (cell in gameCore.figure.list) {
+        for (cell in gameCore.figure.getList()) {
             drawElem(cell.row + gameCore.figure.yCord, cell.column + gameCore.figure.xCord, gameCore.figure.color)
         }
     }
 
+    /**Задание цвета для отрисовки*/
     private fun setColor(color: Color) {
         when (color) {
             Color.RED -> glColor3d(1.0, 0.0, 0.0)
