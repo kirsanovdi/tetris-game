@@ -41,7 +41,7 @@ class GraphicsDisplay(private val gameCore: GameCore, private val controller: Co
                 (vidmode.height() - pHeight[0]) / 2
             )
         }
-        GLFW.glfwSetKeyCallback(window, Input(controller))
+        GLFW.glfwSetKeyCallback(window, Input(controller)) // задание callback функции для чтения ввода с клавиатуры ( класс Input, перегруженный метод invoke() )
         GLFW.glfwMakeContextCurrent(window)
         GLFW.glfwSwapInterval(1)
         GLFW.glfwShowWindow(window)
@@ -62,35 +62,37 @@ class GraphicsDisplay(private val gameCore: GameCore, private val controller: Co
     }
 
     /**Конвертация координаты X из [0, windowWidth] в [-1.0, 1.0]*/
-    private fun fXCord(cord: Int): Float = -1.0f + cord.toFloat() / windowWidth * boxSize
+    private fun fXCord(cord: Int): Float = -1.0f + cord.toFloat() / windowWidth * 2 *boxSize
 
     /**Конвертация координаты Y из [0, windowHeight] в [-1.0, 1.0]*/
-    private fun fYCord(cord: Int): Float = -1.0f + cord.toFloat() / windowHeight * boxSize
+    private fun fYCord(cord: Int): Float = -1.0f + cord.toFloat() / windowHeight * 2 * boxSize
 
     /**Отрисовка сетки*/
     private fun drawGrid() {
-        glBegin(GL_LINES)
-        setColor(gridColor)
+        glBegin(GL_LINES) // начало потока передачи вершин для создания примитива(ов) GL
+        // GL_LINES - каждая пара вершин создаёт отрезок
+        setColor(gridColor) // задание цвета
         for (x in 0..gameCore.width) {
-            glVertex2f(fXCord(x), fYCord(0))
-            glVertex2f(fXCord(x), fYCord(gameCore.height))
+            glVertex2f(fXCord(x), fYCord(0)) //начало отрезка
+            glVertex2f(fXCord(x), fYCord(gameCore.height)) //конец отрезка
         }
         for (y in 0..gameCore.height) {
             glVertex2f(fXCord(0), fYCord(y))
             glVertex2f(fXCord(gameCore.width), fYCord(y))
         }
-        glEnd()
+        glEnd() //конец потока
     }
 
     /**Отрисовка одной ячейки*/
     private fun drawElem(y: Int, x: Int, color: Color) {
-        glBegin(GL_TRIANGLE_STRIP)
-        setColor(color)
-        glVertex2f(fXCord(x), fYCord(y))
+        glBegin(GL_TRIANGLE_STRIP) // начало потока передачи вершин для создания примитива(ов) GL
+        // GL_TRIANGLE_STRIP - позволяет использовать 2 последние точки для создания треугольника путём добавления третьей
+        setColor(color) // задание цвета
+        glVertex2f(fXCord(x), fYCord(y)) // вершина, заданная координатами x и y типа float
         glVertex2f(fXCord(x + 1), fYCord(y))
         glVertex2f(fXCord(x), fYCord(y + 1))
         glVertex2f(fXCord(x + 1), fYCord(y + 1))
-        glEnd()
+        glEnd() //конец потока
     }
 
     /**Отрисовка всех Ячеек*/
@@ -112,7 +114,7 @@ class GraphicsDisplay(private val gameCore: GameCore, private val controller: Co
     /**Задание цвета для отрисовки*/
     private fun setColor(color: Color) {
         when (color) {
-            Color.RED -> glColor3d(1.0, 0.0, 0.0)
+            Color.RED -> glColor3d(1.0, 0.0, 0.0) // цвет задаётся 3 значениями в промежутке [0.0, 1.0], RGB
             Color.GREEN -> glColor3d(0.0, 1.0, 0.0)
             Color.BLUE -> glColor3d(0.0, 0.0, 1.0)
             Color.BlACK -> glColor3d(0.0, 0.0, 0.0)

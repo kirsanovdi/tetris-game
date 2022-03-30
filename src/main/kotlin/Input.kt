@@ -12,6 +12,7 @@ class Input(private val controller: Controller) : GLFWKeyCallback() {
             GLFW.GLFW_KEY_P -> controller.changeSleepMode()
             GLFW.GLFW_KEY_Q -> controller.close()
         }
+        //if (key == GLFW.GLFW_KEY_S) controller.setGameAction(GameAction.DOWN)
     }
 
 }
